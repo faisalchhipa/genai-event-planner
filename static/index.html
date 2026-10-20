@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="AI & Deterministic Event Planning Assistant for Weddings, Birthdays, and Community Events in INR.">
+  <meta name="description" content="AI &amp; Deterministic Event Planning Assistant for Weddings, Birthdays, and Community Events in INR.">
+  <meta name="theme-color" content="#080c18">
   <title>Event Planning Assistant (INR)</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -11,76 +12,86 @@
   <!-- Accessible Skip Link -->
   <a href="#main-content" class="skip-link">Skip to main content</a>
 
+  <!-- Aurora parallax layers and cursor glow are injected by JS -->
+
   <header class="app-header" role="banner">
     <div class="container header-container">
       <div class="brand">
         <span class="brand-icon" aria-hidden="true">&#127881;</span>
         <div class="brand-text">
           <h1>Event Planning Assistant</h1>
-          <p class="tagline">Deterministic INR budgeting, timeline, security checklists, and personalized ideas</p>
+          <p class="tagline">Spatial INR planning &bull; Budget &bull; Timeline &bull; Ideas</p>
         </div>
       </div>
-      <div class="badge-tag" aria-label="Currency and region support">INR (₹) &bull; Weddings &bull; Birthdays &bull; Community</div>
+      <div class="badge-tag" aria-label="Currency and region support">INR (&#8377;) &bull; Weddings &bull; Birthdays &bull; Community</div>
     </div>
   </header>
 
   <main id="main-content" class="container main-content" role="main">
-    <!-- Form Card -->
+
+    <!-- Plan Form Card -->
     <section class="card form-card" aria-labelledby="planner-form-title">
       <h2 id="planner-form-title">Plan Your Event</h2>
-      <p class="section-desc">Provide your event parameters to generate a budget allocation, countdown timeline, and vendor checklist.</p>
+      <p class="section-desc">Define your event parameters to generate a tiered budget, milestone countdown, vendor checklist, and AI ideas.</p>
 
       <form id="plan-form" novalidate>
         <div class="form-grid">
-          <!-- Event Type -->
-          <div class="form-group">
-            <label for="event_type">Event Type <span class="required" aria-hidden="true">*</span></label>
-            <select id="event_type" name="event_type" required>
+
+          <!-- Event Type: floating label, always has a value -->
+          <div class="form-group float-field float-select">
+            <select id="event_type" name="event_type" required class="form-control">
               <option value="weddings">Weddings (Shaadi / Reception)</option>
-              <option value="birthdays">Birthdays (Kids & Milestone)</option>
+              <option value="birthdays">Birthdays (Kids &amp; Milestone)</option>
               <option value="community events">Community Events (Festivals / Melas)</option>
             </select>
+            <label for="event_type">Event Type <span class="required" aria-hidden="true">*</span></label>
           </div>
 
-          <!-- Guest Count -->
-          <div class="form-group">
-            <label for="guests">Number of Guests (1 - 5,000) <span class="required" aria-hidden="true">*</span></label>
-            <input type="number" id="guests" name="guests" min="1" max="5000" step="1" placeholder="e.g. 250" required>
-            <span class="field-hint" id="guests-hint">200+ guests automatically schedules mandatory security &amp; valet marshals.</span>
+          <!-- Guests -->
+          <div class="form-group float-field">
+            <input type="number" id="guests" name="guests"
+                   min="1" max="5000" step="1" placeholder=" "
+                   required class="form-control"
+                   aria-describedby="guests-hint">
+            <label for="guests">Guests (1&ndash;5,000) <span class="required" aria-hidden="true">*</span></label>
+            <span class="field-hint" id="guests-hint">200+ guests: mandatory security &amp; valet added automatically.</span>
           </div>
 
-          <!-- Total Budget -->
-          <div class="form-group">
-            <label for="budget">Total Budget (in INR ₹) <span class="required" aria-hidden="true">*</span></label>
-            <div class="input-prefix-wrapper">
-              <span class="currency-prefix" aria-hidden="true">₹</span>
-              <input type="number" id="budget" name="budget" min="100" step="1" placeholder="e.g. 500000" required>
-            </div>
-            <span class="field-hint">Budget per guest determines your tier: Tight, Comfortable, or Premium.</span>
+          <!-- Budget -->
+          <div class="form-group float-field float-prefix-field">
+            <span class="float-currency" aria-hidden="true">&#8377;</span>
+            <input type="number" id="budget" name="budget"
+                   min="100" step="1" placeholder=" "
+                   required class="form-control">
+            <label for="budget">Total Budget (INR) <span class="required" aria-hidden="true">*</span></label>
+            <span class="field-hint">Per-guest budget sets tier: Tight / Comfortable / Premium.</span>
           </div>
 
           <!-- Event Date -->
-          <div class="form-group">
+          <div class="form-group float-field float-select">
+            <input type="date" id="event_date" name="event_date"
+                   required class="form-control">
             <label for="event_date">Event Date <span class="required" aria-hidden="true">*</span></label>
-            <input type="date" id="event_date" name="event_date" required>
-            <span class="field-hint">Timeline counts back from this date, flagging past-due milestones.</span>
+            <span class="field-hint">Countdown timeline counts back from this date.</span>
           </div>
+
         </div>
 
-        <!-- Preferences -->
-        <div class="form-group preferences-group">
-          <div class="label-with-count">
-            <label for="preferences">Special Preferences &amp; Themes (Optional)</label>
+        <!-- Preferences textarea -->
+        <div class="form-group float-field preferences-group">
+          <textarea id="preferences" name="preferences"
+                    maxlength="300" rows="3" placeholder=" "
+                    class="form-control"></textarea>
+          <label for="preferences">Special Preferences &amp; Themes (Optional)</label>
+          <div class="hint-row">
+            <span class="field-hint">Isolated as untrusted data before AI use.</span>
             <span id="char-counter" class="char-counter" aria-live="polite">0 / 300</span>
           </div>
-          <textarea id="preferences" name="preferences" maxlength="300" rows="3" placeholder="e.g. Outdoor garden setting, vegan buffet, traditional Carnatic fusion music, pastel floral decor."></textarea>
-          <span class="field-hint">Treated strictly as untrusted data and isolated within safe boundaries.</span>
         </div>
 
-        <!-- Form Actions -->
         <div class="form-actions">
           <button type="submit" id="submit-btn" class="btn btn-primary">
-            <span id="btn-text">Generate Comprehensive Plan</span>
+            <span id="btn-text">Generate Spatial Plan</span>
             <span id="btn-spinner" class="spinner hidden" aria-hidden="true"></span>
           </button>
           <button type="button" id="reset-btn" class="btn btn-secondary">Reset</button>
@@ -88,31 +99,61 @@
       </form>
     </section>
 
-    <!-- Notification / Status Banner (Aria Live) -->
+    <!-- Status Banner (aria-live) -->
     <div id="status-banner" class="status-banner hidden" role="status" aria-live="polite"></div>
 
-    <!-- Results Section -->
+    <!-- ===== RESULTS ===== -->
     <section id="results-section" class="results-section hidden" aria-labelledby="results-title">
+
       <div class="results-header">
         <h2 id="results-title">Your Event Plan &amp; Roadmap</h2>
         <button type="button" id="print-btn" class="btn btn-outline" aria-label="Print or save event plan">Print Plan</button>
       </div>
 
-      <!-- Plan Summary Cards -->
-      <div id="summary-cards-container" class="summary-cards-grid"></div>
+      <!-- Live Countdown Ring -->
+      <div id="countdown-ring-section" class="countdown-section" aria-label="Live event countdown">
+        <!-- Decorative ring and numbers: screen-reader text provided separately -->
+        <div class="countdown-stage" aria-hidden="true">
+          <div class="countdown-orbit-ring">
+            <div class="orbit-traveller"></div>
+          </div>
+          <div class="countdown-numbers">
+            <div class="countdown-unit">
+              <span id="countdown-days" class="cnum">--</span>
+              <span class="clabel">DAYS</span>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-unit">
+              <span id="countdown-hours" class="cnum">--</span>
+              <span class="clabel">HRS</span>
+            </div>
+            <div class="countdown-sep">:</div>
+            <div class="countdown-unit">
+              <span id="countdown-mins" class="cnum">--</span>
+              <span class="clabel">MIN</span>
+            </div>
+          </div>
+        </div>
+        <!-- Screen-reader announcement, updated by JS -->
+        <p class="sr-only" aria-live="polite" id="countdown-sr-text">Event countdown loading.</p>
+      </div>
 
-      <!-- Budget Breakdown Section -->
+      <!-- Summary Cards -->
+      <div id="summary-cards-container" class="summary-cards-grid" aria-live="polite"></div>
+
+      <!-- Budget Breakdown -->
       <article class="card result-card" aria-labelledby="budget-breakdown-title">
         <h3 id="budget-breakdown-title">Budget Allocation &amp; Cost Breakdown</h3>
         <p class="section-desc" id="budget-summary-text"></p>
-        <div id="budget-visual-bar" class="budget-visual-bar" role="img" aria-label="Budget distribution bar chart"></div>
+        <!-- 3D vertical bar chart (populated by JS, replaces old horizontal bar) -->
+        <div id="budget-visual-bar" class="budget-visual-bar" role="img" aria-label="3D budget allocation bar chart"></div>
         <div class="table-responsive">
           <table class="data-table" id="budget-table">
             <thead>
               <tr>
                 <th scope="col">Expense Category</th>
                 <th scope="col">Allocation (%)</th>
-                <th scope="col">Estimated Amount (₹ INR)</th>
+                <th scope="col">Estimated Amount (&#8377; INR)</th>
               </tr>
             </thead>
             <tbody id="budget-table-body"></tbody>
@@ -121,28 +162,29 @@
         </div>
       </article>
 
-      <!-- Personalized Ideas Section -->
+      <!-- Ideas: flip cards (JS populates #ideas-grid) -->
       <article class="card result-card" aria-labelledby="ideas-title">
         <div class="section-header-flex">
           <h3 id="ideas-title">5 Personalized Ideas &amp; Highlights</h3>
           <span id="ideas-source-badge" class="badge"></span>
         </div>
         <p class="section-desc" id="ideas-description-text"></p>
+        <!-- JS creates flip-card articles inside this grid -->
         <div id="ideas-grid" class="ideas-grid"></div>
       </article>
 
-      <!-- Countdown Timeline Section -->
+      <!-- Timeline: vertical depth path (JS populates #timeline-list) -->
       <article class="card result-card" aria-labelledby="timeline-title">
         <h3 id="timeline-title">Countdown Timeline &amp; Milestones</h3>
-        <p class="section-desc">Counted backwards from your event date. Tasks that have already passed are flagged as past-due.</p>
+        <p class="section-desc">Counted backwards from your event date. Past-due tasks are flagged with an icon and label, not just colour.</p>
         <div id="timeline-list" class="timeline-list"></div>
       </article>
 
-      <!-- Vendor Checklist Section -->
+      <!-- Vendor Checklist -->
       <article class="card result-card" aria-labelledby="vendor-title">
         <h3 id="vendor-title">Vendor &amp; Logistics Checklist</h3>
-        <p class="section-desc">Key service categories to contract, with direct Google Maps local search shortcuts.</p>
-        <div id="vendor-alert-box" class="vendor-alert-box hidden"></div>
+        <p class="section-desc">Key service categories with direct Google Maps local search links.</p>
+        <div id="vendor-alert-box" class="vendor-alert-box hidden" role="alert"></div>
         <div class="table-responsive">
           <table class="data-table" id="vendor-table">
             <thead>
@@ -157,12 +199,13 @@
           </table>
         </div>
       </article>
+
     </section>
   </main>
 
   <footer class="app-footer" role="contentinfo">
     <div class="container footer-content">
-      <p>&copy; Event Planning Assistant. Deterministic calculation engine &bull; Zero external client dependencies &bull; Built for Google Cloud Run.</p>
+      <p>&copy; Event Planning Assistant &bull; Stdlib-only &bull; Zero external dependencies &bull; Google Cloud Run</p>
     </div>
   </footer>
 
