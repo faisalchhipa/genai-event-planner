@@ -316,18 +316,70 @@ class EventPlannerRequestHandler(BaseHTTPRequestHandler):
             )
 
 
-def run_server(host: str = "0.0.0.0", port: Optional[int] = None) -> None:
-    """Run the HTTP server."""
-    if port is None:
-        port = int(os.environ.get("PORT", "8080"))
+class ReusableHTTPServer(HTTPServer):
+    """HTTPServer with SO_REUSEADDR enabled for faster restarts."""
+    allow_reuse_address = True
 
-    server_address = (host, port)
-    httpd = HTTPServer(server_address, EventPlannerRequestHandler)
-    print(f"Event Planner Assistant running on http://{host}:{port}")
+
+def run_server(host: Optional[str] = None, port: Optional[int] = None) -> None:
+    """
+    Run the HTTP server.
+    Supports HOST and PORT env vars, CLI port arguments (e.g. `python server.py 8000`),
+    and automatic port fallback (8000 -> 8080 -> 8081) if a port is already in use.
+    """
+    if host is None:
+        host = os.environ.get("HOST", "0.0.0.0")
+
+    explicit_port = port
+    if explicit_port is None and "PORT" in os.environ:
+        try:
+            explicit_port = int(os.environ["PORT"])
+        except ValueError:
+            explicit_port = None
+
+    if explicit_port is None and len(sys.argv) > 1:
+        for arg in sys.argv[1:]:
+            if arg.isdigit():
+                explicit_port = int(arg)
+                break
+            if arg.startswith("--port="):
+                explicit_port = int(arg.split("=")[1])
+                break
+
+    # If an explicit port was requested (via env or CLI), only attempt that port.
+    # Otherwise, try standard development ports with fallback if port is in use.
+    if explicit_port is not None:
+        ports_to_try = [explicit_port]
+    else:
+        ports_to_try = [8000, 8080, 8081, 8082]
+
+    httpd = None
+    bound_port = None
+    for p in ports_to_try:
+        try:
+            httpd = ReusableHTTPServer((host, p), EventPlannerRequestHandler)
+            bound_port = p
+            break
+        except (PermissionError, OSError) as err:
+            if explicit_port is not None:
+                print(f"Error: Unable to bind to {host}:{p} ({err}).")
+                print("Hint: Another application may already be using this port. Try: python server.py 8000")
+                sys.exit(1)
+            print(f"Notice: Port {p} is unavailable ({err}). Trying alternative port...")
+
+    if httpd is None:
+        print("Error: Could not bind to any candidate port.")
+        sys.exit(1)
+
+    display_host = "localhost" if host in ("0.0.0.0", "") else host
+    print(f"============================================================", flush=True)
+    print(f" Event Planning Assistant running at: http://{display_host}:{bound_port}", flush=True)
+    print(f" Bound to interface {host}:{bound_port} (Press Ctrl+C to stop)", flush=True)
+    print(f"============================================================", flush=True)
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down server gracefully...")
+        print("\nShutting down server gracefully...", flush=True)
         httpd.server_close()
 
 
