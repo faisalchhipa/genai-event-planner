@@ -189,10 +189,33 @@ body::before {
   gap: 0.75rem;
 }
 
-.brand { display: flex; align-items: center; gap: 0.75rem; }
-.brand-icon { font-size: 1.9rem; }
-.brand-text h1 { font-size: 1.4rem; font-weight: 800; color: var(--c-text); line-height: 1.2; }
-.tagline { font-size: 0.8rem; color: var(--c-text-muted); }
+.brand { display: flex; align-items: center; gap: 1rem; }
+.brand-logo-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  background: rgba(15, 21, 46, 0.85);
+  border: 1.5px solid rgba(167, 139, 250, 0.35);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(124, 108, 240, 0.25), 0 0 1px rgba(255, 255, 255, 0.3) inset;
+  flex-shrink: 0;
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast);
+}
+.brand-logo-wrap:hover {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(124, 108, 240, 0.4), 0 0 1px rgba(255, 255, 255, 0.4) inset;
+}
+.brand-text h1.brand-title {
+  font-size: 1.55rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+}
+.tagline { font-size: 0.8rem; color: var(--c-text-muted); font-weight: 500; }
 
 .badge-tag {
   background: rgba(124,108,240,0.18);
@@ -205,7 +228,7 @@ body::before {
 }
 
 /* ──────────────────────────────────────────────────────────────────────────
-   7. GLASS CARDS  (3D perspective + tilt via JS element.style.setProperty)
+   7. GLASS CARDS  (Spatial glass cards with crisp text rendering)
    ────────────────────────────────────────────────────────────────────────── */
 .card {
   position: relative;
@@ -220,10 +243,11 @@ body::before {
     0 4px 24px rgba(0,0,0,0.45),
     0 1px  0   rgba(255,255,255,0.06) inset,
     0 -1px 0   rgba(0,0,0,0.3) inset;
-  transition: box-shadow var(--trans-fast), transform var(--trans-fast);
-  transform-style: preserve-3d;
-  will-change: transform;
+  transition: box-shadow var(--trans-fast);
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Specular-highlight overlay — JS moves it via style.setProperty */
@@ -912,7 +936,7 @@ textarea.form-control {
 /* Fallback (JS adds .in-view via IntersectionObserver) */
 .timeline-item.in-view {
   opacity: 1;
-  transform: translateZ(0) scale(1);
+  transform: none;
 }
 
 /* Node dot on guide line */

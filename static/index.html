@@ -17,10 +17,25 @@
   <header class="app-header" role="banner">
     <div class="container header-container">
       <div class="brand">
-        <span class="brand-icon" aria-hidden="true">&#127881;</span>
+        <div class="brand-logo-wrap" aria-hidden="true">
+          <svg class="brand-logo" width="38" height="38" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="brand-grad-1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#7c6cf0"/>
+                <stop offset="50%" stop-color="#a78bfa"/>
+                <stop offset="100%" stop-color="#22d3ee"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="40" height="40" rx="10" fill="#0f152e" stroke="url(#brand-grad-1)" stroke-width="1.8"/>
+            <path d="M12 22C12 16.477 16.477 12 22 12C27.523 12 32 16.477 32 22" stroke="url(#brand-grad-1)" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="22" cy="22" r="4.5" fill="url(#brand-grad-1)"/>
+            <path d="M14 30L22 22L30 30" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="22" cy="12" r="2.2" fill="#22d3ee"/>
+          </svg>
+        </div>
         <div class="brand-text">
-          <h1>Event Planning Assistant</h1>
-          <p class="tagline">Spatial INR planning &bull; Budget &bull; Timeline &bull; Ideas</p>
+          <h1 class="brand-title">Event Planning Assistant</h1>
+          <p class="tagline">Enterprise Event Architecture &bull; Tiered INR (&#8377;) Budgeting &bull; Timeline &bull; AI Ideas</p>
         </div>
       </div>
       <div class="badge-tag" aria-label="Currency and region support">INR (&#8377;) &bull; Weddings &bull; Birthdays &bull; Community</div>

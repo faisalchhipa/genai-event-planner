@@ -106,25 +106,16 @@ document.addEventListener("DOMContentLoaded", function () {
   }());
 
   /* ──────────────────────────────────────────────────────────────────────
-     CARD 3D TILT  (max 8 deg, disabled on touch / reduced-motion)
+     CARD LIGHTING & SPECULAR HIGHLIGHT (Zero 3D blur on text/details)
   ────────────────────────────────────────────────────────────────────── */
   (function setupTilt() {
     if (NO_PARALLAX) return;
 
-    var MAX_DEG = 8;
     var allCards = document.querySelectorAll(".card");
 
     function applyTilt(card, e) {
       var rect = card.getBoundingClientRect();
-      var cx   = (e.clientX - rect.left) / rect.width  - 0.5;
-      var cy   = (e.clientY - rect.top)  / rect.height - 0.5;
-      var rx   = -(cy * MAX_DEG * 2);
-      var ry   =   cx * MAX_DEG * 2;
-      card.style.setProperty(
-        "transform",
-        "perspective(900px) rotateX(" + rx + "deg) rotateY(" + ry + "deg) translateZ(6px)"
-      );
-      /* Specular: percentage position for radial-gradient in ::after */
+      /* Specular highlight: tracks pointer across card surface without 3D text blur */
       var mx = ((e.clientX - rect.left) / rect.width  * 100).toFixed(1);
       var my = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
       card.style.setProperty("--mx", mx + "%");
@@ -132,7 +123,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function resetTilt(card) {
-      card.style.setProperty("transform", "perspective(900px) rotateX(0) rotateY(0) translateZ(0)");
+      card.style.setProperty("--mx", "50%");
+      card.style.setProperty("--my", "50%");
     }
 
     function bindCard(card) {
