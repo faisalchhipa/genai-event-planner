@@ -8,6 +8,7 @@ AI Idea Generation module for Event Planner.
 - Graceful rule-based fallback on any failure
 """
 
+from collections import OrderedDict
 import hashlib
 import json
 import logging
@@ -24,7 +25,19 @@ DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 GEMINI_API_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
 
 # Global in-memory cache: hash_key -> List[Dict[str, str]]
-_IDEAS_CACHE: Dict[str, List[Dict[str, str]]] = {}
+# Capped at 256 entries; evicts oldest when capacity is exceeded.
+MAX_CACHE_SIZE = 256
+_IDEAS_CACHE: OrderedDict[str, List[Dict[str, str]]] = OrderedDict()
+
+
+def set_cached_ideas(key: str, ideas: List[Dict[str, str]]) -> None:
+    """Store ideas in cache, evicting the oldest entry if size exceeds MAX_CACHE_SIZE."""
+    global _IDEAS_CACHE
+    if key in _IDEAS_CACHE:
+        del _IDEAS_CACHE[key]
+    _IDEAS_CACHE[key] = ideas
+    while len(_IDEAS_CACHE) > MAX_CACHE_SIZE:
+        _IDEAS_CACHE.popitem(last=False)
 
 
 def load_env_file(filepath: str = ".env") -> Dict[str, str]:
@@ -482,7 +495,6 @@ def generate_personalized_ideas(
     # If no API key is available, return rule-based fallback immediately
     if not effective_api_key:
         fallback = rule_based_fallback_ideas(event_type, tier, guests, preferences)
-        _IDEAS_CACHE[cache_key] = fallback
         return {
             "ideas": fallback,
             "source": "fallback",
@@ -537,8 +549,8 @@ def generate_personalized_ideas(
         raw_text = candidates[0].get("content", {}).get("parts", [{}])[0].get("text", "")
         validated_ideas = validate_and_cap_ideas(raw_text)
 
-        # Store in cache
-        _IDEAS_CACHE[cache_key] = validated_ideas
+        # Store in cache (capped with eviction of oldest)
+        set_cached_ideas(cache_key, validated_ideas)
 
         return {
             "ideas": validated_ideas,

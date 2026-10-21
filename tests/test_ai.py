@@ -317,6 +317,62 @@ class TestCaching(unittest.TestCase):
         self.assertTrue(res2["cached"])
         self.assertEqual(mock_urlopen.call_count, 1)
 
+    @patch("urllib.request.urlopen")
+    def test_failed_gemini_call_does_not_cache_fallback(self, mock_urlopen):
+        """Verify that fallback ideas produced by a failed Gemini call are NOT cached."""
+        mock_urlopen.side_effect = urllib.error.URLError("Network unreachable")
+
+        res1 = generate_personalized_ideas(
+            event_type="birthdays",
+            tier="tight",
+            guests=10,
+            budget_inr=5000,
+            preferences="Superheroes",
+            api_key="test_key",
+        )
+        self.assertEqual(res1["source"], "fallback")
+        self.assertFalse(res1["cached"])
+
+        # Check cache is empty - fallback was not cached
+        cache_key = compute_cache_key("birthdays", "tight", 10, 5000, "Superheroes")
+        from planner.ai import _IDEAS_CACHE, MAX_CACHE_SIZE, set_cached_ideas
+        self.assertNotIn(cache_key, _IDEAS_CACHE)
+
+        # A second call should invoke urlopen again, not return cached
+        res2 = generate_personalized_ideas(
+            event_type="birthdays",
+            tier="tight",
+            guests=10,
+            budget_inr=5000,
+            preferences="Superheroes",
+            api_key="test_key",
+        )
+        self.assertEqual(res2["source"], "fallback")
+        self.assertEqual(mock_urlopen.call_count, 2)
+
+    def test_ideas_cache_capped_at_256_entries_and_evicts_oldest(self):
+        """Verify _IDEAS_CACHE is capped at 256 entries and evicts the oldest entry."""
+        from planner.ai import _IDEAS_CACHE, MAX_CACHE_SIZE, set_cached_ideas
+        self.assertEqual(MAX_CACHE_SIZE, 256)
+        clear_ideas_cache()
+
+        # Add 256 distinct entries
+        for i in range(256):
+            set_cached_ideas(f"key_{i}", [{"title": f"Idea {i}", "description": "d", "category": "c"}])
+
+        self.assertEqual(len(_IDEAS_CACHE), 256)
+        self.assertIn("key_0", _IDEAS_CACHE)
+        self.assertIn("key_255", _IDEAS_CACHE)
+
+        # Add the 257th entry
+        set_cached_ideas("key_256", [{"title": "Idea 256", "description": "d", "category": "c"}])
+        self.assertEqual(len(_IDEAS_CACHE), 256)
+        # Oldest entry (key_0) must have been evicted
+        self.assertNotIn("key_0", _IDEAS_CACHE)
+        # Newer entries must remain
+        self.assertIn("key_1", _IDEAS_CACHE)
+        self.assertIn("key_256", _IDEAS_CACHE)
+
 
 if __name__ == "__main__":
     unittest.main()
