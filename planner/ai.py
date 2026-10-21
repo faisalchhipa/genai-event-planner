@@ -10,11 +10,14 @@ AI Idea Generation module for Event Planner.
 
 import hashlib
 import json
+import logging
 import os
 import re
 from typing import Any, Dict, List, Optional, Tuple
 import urllib.error
 import urllib.request
+
+logger = logging.getLogger(__name__)
 
 # Default Gemini model
 DEFAULT_GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
@@ -546,14 +549,13 @@ def generate_personalized_ideas(
         }
 
     except Exception as err:
-        # Fall back to rule-based ideas on any network, parsing, or validation error
+        # Log internal error details server-side only; never leak str(err) to API callers
+        logger.warning("Gemini API call failed (%s): %s", type(err).__name__, err, exc_info=True)
         fallback = rule_based_fallback_ideas(event_type, tier, guests, preferences)
-        # We also cache the fallback to avoid repeatedly hammering a failing endpoint
-        _IDEAS_CACHE[cache_key] = fallback
         return {
             "ideas": fallback,
             "source": "fallback",
-            "reason": f"Gemini API error ({type(err).__name__}): {str(err)}",
+            "reason": "AI recommendations temporarily unavailable. Showing expert curated suggestions.",
             "cached": False,
             "success": True,
         }

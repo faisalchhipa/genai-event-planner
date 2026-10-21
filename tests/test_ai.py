@@ -157,7 +157,37 @@ class TestFallbackMechanism(unittest.TestCase):
         self.assertTrue(res["success"])
         self.assertEqual(res["source"], "fallback")
         self.assertEqual(len(res["ideas"]), 5)
-        self.assertIn("HTTPError", res.get("reason", ""))
+        self.assertNotIn("HTTPError", res.get("reason", ""))
+        self.assertIn("temporarily unavailable", res.get("reason", ""))
+
+    @patch("urllib.request.urlopen")
+    def test_error_does_not_leak_str_err_and_logs_server_side(self, mock_urlopen):
+        """Verify that API failure returns generic reason without str(err) and logs server-side."""
+        mock_urlopen.side_effect = ConnectionResetError("Sensitive internal socket connection dropped at 10.240.0.5")
+
+        with self.assertLogs("planner.ai", level="WARNING") as log_cm:
+            res = generate_personalized_ideas(
+                event_type="birthdays",
+                tier="tight",
+                guests=20,
+                budget_inr=10000,
+                preferences="Outdoor",
+                api_key="test_key",
+            )
+
+        # Response must not contain exception type or internal str(err)
+        self.assertTrue(res["success"])
+        self.assertEqual(res["source"], "fallback")
+        reason = res.get("reason", "")
+        self.assertNotIn("ConnectionResetError", reason)
+        self.assertNotIn("Sensitive internal socket", reason)
+        self.assertNotIn("10.240.0.5", reason)
+        self.assertEqual(reason, "AI recommendations temporarily unavailable. Showing expert curated suggestions.")
+
+        # Server-side logs must capture the actual diagnostic exception
+        logged_output = " ".join(log_cm.output)
+        self.assertIn("ConnectionResetError", logged_output)
+        self.assertIn("Sensitive internal socket connection dropped", logged_output)
 
     @patch("urllib.request.urlopen")
     def test_invalid_json_from_model_falls_back(self, mock_urlopen):

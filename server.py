@@ -15,10 +15,13 @@ from datetime import date
 from http import HTTPStatus
 from http.server import HTTPServer, BaseHTTPRequestHandler
 import json
+import logging
 import os
 import sys
 import time
 from typing import Any, Dict, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 from planner.ai import generate_personalized_ideas
 from planner.logic import generate_plan, validate_input
@@ -310,8 +313,9 @@ class EventPlannerRequestHandler(BaseHTTPRequestHandler):
         except ValueError as val_err:
             # Client validation error - safe to return message
             self.respond_error(HTTPStatus.BAD_REQUEST, str(val_err))
-        except Exception:
-            # Unexpected error - generic message, NO stack trace leaked
+        except Exception as err:
+            # Unexpected error - log server-side only, return generic message without leaking str(err)
+            logger.error("Unexpected error processing plan: %s", err, exc_info=True)
             self.respond_error(
                 HTTPStatus.INTERNAL_SERVER_ERROR,
                 "An unexpected error occurred while generating your plan. Please verify your inputs.",
