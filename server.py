@@ -114,15 +114,17 @@ class EventPlannerRequestHandler(BaseHTTPRequestHandler):
     def get_client_ip(self) -> str:
         """
         Extract client IP for rate limiting.
-        Reads X-Forwarded-For header if running behind reverse proxy (e.g., Google Cloud Run).
+        In Google Cloud Run (and standard reverse proxy configurations), the proxy appends
+        the verified client IP to the rightmost position of the X-Forwarded-For header.
+        The leftmost entry is client-controlled and untrusted.
         Falls back to direct socket client address.
         """
         x_forwarded_for = self.headers.get("X-Forwarded-For")
         if x_forwarded_for:
-            # First IP in comma-separated chain is the client IP
-            first_ip = x_forwarded_for.split(",")[0].strip()
-            if first_ip:
-                return first_ip
+            # Rightmost entry is appended by the trusted reverse proxy (Cloud Run)
+            ips = [ip.strip() for ip in x_forwarded_for.split(",") if ip.strip()]
+            if ips:
+                return ips[-1]
         if self.client_address and len(self.client_address) > 0:
             return str(self.client_address[0])
         return "127.0.0.1"

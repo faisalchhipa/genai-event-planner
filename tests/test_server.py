@@ -196,6 +196,46 @@ class TestServerIntegration(unittest.TestCase):
 
         self.assertTrue(hit_429, "Expected client to be rate limited with HTTP 429")
 
+    def test_forged_first_x_forwarded_for_entry_does_not_change_rate_limit_key(self):
+        """
+        Verify that get_client_ip uses the rightmost X-Forwarded-For entry added by Cloud Run,
+        so forging the first (leftmost) entry cannot bypass rate limiting.
+        """
+        trusted_client_ip = "198.51.100.88"
+        future_date = (date.today() + timedelta(days=60)).isoformat()
+        payload = json.dumps({
+            "event_type": "birthdays",
+            "guests": 15,
+            "budget": 15000,
+            "event_date": future_date,
+        }).encode("utf-8")
+
+        hit_429 = False
+        # Each request has a different spoofed leftmost IP, but identical rightmost IP
+        for i in range(RATE_LIMIT_MAX_REQUESTS + 5):
+            spoofed_first_ip = f"10.0.{i // 256}.{i % 256}"
+            req = urllib.request.Request(
+                f"{self.base_url}/api/plan",
+                data=payload,
+                headers={
+                    "Content-Type": "application/json",
+                    "X-Forwarded-For": f"{spoofed_first_ip}, {trusted_client_ip}",
+                },
+                method="POST",
+            )
+            try:
+                with urllib.request.urlopen(req) as resp:
+                    pass
+            except urllib.error.HTTPError as e:
+                if e.code == 429:
+                    hit_429 = True
+                    break
+
+        self.assertTrue(
+            hit_429,
+            "Rate limit must be enforced against rightmost IP; forged first entry should not bypass rate limiting."
+        )
+
     def test_frontend_does_not_use_inner_html(self):
         """Verify strict textContent only security constraint in app.js."""
         app_js_path = os.path.join(os.path.dirname(__file__), "..", "static", "app.js")
