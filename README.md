@@ -24,7 +24,7 @@ All budgeting is performed strictly in **Indian National Rupees (INR ₹)**.
 - **Enrichment via AI with Graceful Fallback**: Gemini LLM generates 5 creative, contextual ideas. If the API key is missing, network fails, rate limits trigger, or response format is invalid, the engine falls back seamlessly to rule-based recommendations.
 - **Defense-in-Depth Security**:
   - **Prompt Isolation**: Untrusted user preferences are enclosed inside `<prefs>` tags, disarmed of injection tokens, and accompanied by explicit instructions directing the model to treat the content as data only.
-  - **Network & Server Hardening**: Request body size limited to 64 KB, per-IP sliding window rate limiting (respecting `X-Forwarded-For` for reverse proxies/Cloud Run), strictly whitelisted static file routes, Content Security Policy (CSP), and generic error responses without stack trace leakage.
+  - **Network & Server Hardening**: Request body size limited to 4 KB, per-IP sliding window rate limiting (respecting `X-Forwarded-For` for reverse proxies/Cloud Run), strictly whitelisted static file routes, Content Security Policy (CSP), and generic error responses without stack trace leakage.
   - **Frontend XSS Immunity**: The frontend JavaScript uses `textContent` exclusively for DOM manipulation—zero use of `innerHTML`, `outerHTML`, or `insertAdjacentHTML`.
 - **Accessibility by Design (WCAG 2.1 AA)**: Skip links, explicit label associations, live region announcements (`aria-live="polite"`), high-contrast focus rings (`:focus-visible`), AA color contrast ratios (≥ 4.5:1), and mobile touch targets (≥ 44px).
 
@@ -63,7 +63,7 @@ All budgeting is performed strictly in **Indian National Rupees (INR ₹)**.
 5. **Rule-Based Fallback**: Returns 5 curated recommendations if the API is unavailable or unconfigured.
 
 ### Hardened HTTP Server & UI (`server.py`, `static/`)
-1. **POST /api/plan**: Reads JSON body up to 64 KB, validates client rate limits via `X-Forwarded-For`, computes the plan, and returns JSON.
+1. **POST /api/plan**: Reads JSON body up to 4 KB, validates client rate limits via `X-Forwarded-For`, computes the plan, and returns JSON.
 2. **Static Whitelisting**: Only serves `/`, `/index.html`, `/static/style.css`, `/static/app.js`, and `/favicon.ico`. Directory traversal attempts are rejected.
 3. **Security Headers**: Sends CSP, `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, and `Permissions-Policy`.
 

@@ -3,7 +3,7 @@ Standard library HTTP server for Event Planning Assistant.
 - Endpoint: POST /api/plan
 - Whitelisted static file serving (GET /, /index.html, /static/*)
 - Security:
-  * Strict Content-Length body size limits (max 64KB)
+  * Strict Content-Length body size limits (max 4KB)
   * Sliding-window rate limiting per client IP (reads X-Forwarded-For for Cloud Run)
   * Hardened security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options)
   * Whitelisted static routes (prevent directory traversal)
@@ -27,7 +27,7 @@ from planner.ai import generate_personalized_ideas
 from planner.logic import generate_plan, validate_input
 
 # Limits and Configuration
-MAX_BODY_SIZE = 64 * 1024  # 64 KB
+MAX_BODY_SIZE = 4 * 1024  # 4 KB
 RATE_LIMIT_WINDOW_SECONDS = 60
 RATE_LIMIT_MAX_REQUESTS = 30  # 30 requests per minute per IP
 

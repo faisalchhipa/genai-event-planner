@@ -145,7 +145,10 @@ class TestServerIntegration(unittest.TestCase):
             self.assertNotIn(".py", err_data["error"])
 
     def test_body_size_limit_rejected(self):
-        # Generate payload larger than 64KB
+        # Verify MAX_BODY_SIZE is set to 4 KB
+        self.assertEqual(MAX_BODY_SIZE, 4 * 1024)
+
+        # Generate payload larger than 4 KB
         huge_payload = {
             "event_type": "weddings",
             "guests": 100,
@@ -165,6 +168,8 @@ class TestServerIntegration(unittest.TestCase):
             self.fail("Expected 413 Payload Too Large")
         except urllib.error.HTTPError as e:
             self.assertEqual(e.code, 413)
+            err_data = json.loads(e.read().decode("utf-8"))
+            self.assertIn("4 KB", err_data.get("error", ""))
 
     def test_rate_limiting_per_client_ip(self):
         client_ip = "203.0.113.42"
