@@ -193,6 +193,51 @@ class TestCaching(unittest.TestCase):
         clear_ideas_cache()
 
     @patch("urllib.request.urlopen")
+    def test_gemini_api_key_sent_in_header_not_url(self, mock_urlopen):
+        """Verify API key is sent via x-goog-api-key header and not exposed in URL."""
+        sample_ideas = [
+            {"title": f"Idea {i}", "description": f"Desc {i}", "category": "Decor"}
+            for i in range(1, 6)
+        ]
+        api_response = {
+            "candidates": [
+                {
+                    "content": {
+                        "parts": [
+                            {"text": json.dumps({"ideas": sample_ideas})}
+                        ]
+                    }
+                }
+            ]
+        }
+        mock_resp = MagicMock()
+        mock_resp.getcode.return_value = 200
+        mock_resp.read.return_value = json.dumps(api_response).encode("utf-8")
+        mock_resp.__enter__.return_value = mock_resp
+        mock_urlopen.return_value = mock_resp
+
+        test_key = "AIzaSyTestSecretKey12345"
+        generate_personalized_ideas(
+            event_type="weddings",
+            tier="comfortable",
+            guests=100,
+            budget_inr=300000,
+            preferences="Traditional",
+            api_key=test_key,
+        )
+
+        self.assertEqual(mock_urlopen.call_count, 1)
+        req = mock_urlopen.call_args[0][0]
+        # URL must not contain the API key or query string
+        self.assertNotIn("key=", req.full_url)
+        self.assertNotIn(test_key, req.full_url)
+        # Header must contain the API key
+        # urllib Request stores headers with capitalized case or in headers dict
+        req_headers = {k.lower(): v for k, v in req.headers.items()}
+        self.assertIn("x-goog-api-key", req_headers)
+        self.assertEqual(req_headers["x-goog-api-key"], test_key)
+
+    @patch("urllib.request.urlopen")
     def test_cache_hits_do_not_trigger_network(self, mock_urlopen):
         # Mock a successful Gemini API response
         sample_ideas = [

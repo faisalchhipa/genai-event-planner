@@ -491,7 +491,7 @@ def generate_personalized_ideas(
     # Attempt Gemini API call via REST
     prompt = construct_prompt(event_type, tier, guests, budget_inr, preferences)
     selected_model = model_name or DEFAULT_GEMINI_MODEL
-    url = f"{GEMINI_API_ENDPOINT.format(model=selected_model)}?key={effective_api_key}"
+    url = GEMINI_API_ENDPOINT.format(model=selected_model)
 
     payload = {
         "contents": [
@@ -512,7 +512,10 @@ def generate_personalized_ideas(
     req = urllib.request.Request(
         url,
         data=req_data,
-        headers={"Content-Type": "application/json"},
+        headers={
+            "Content-Type": "application/json",
+            "x-goog-api-key": effective_api_key,
+        },
         method="POST",
     )
 
